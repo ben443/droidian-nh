@@ -17,17 +17,17 @@
 
 rootfs:
   type: rootfs
-  arch: [armhf, arm64]
+  arch: [arm64]
   edition: phosh
   variant: phone
-  apilevel: [28, 29, 30, 32, 33]
+  apilevel: [30, 32]
 
   packages: *adaptation_generic_packages
 
   bundles:
     # Developer tools bundle
     - name: droidian-devtools
-      arch: any
-      apilevel: any
+      arch: [arm64]
+      apilevel: [30,32]
       only_stable: yes
       packages: *devtools_packages
