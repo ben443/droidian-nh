@@ -18,7 +18,7 @@
 rootfs:
   type: rootfs
   arch: [arm64]
-  edition: droidian_plamo_wf_experimental
+  edition: plamo_wf_experimental
   variant: tablet
   apilevel: [30]
 
