@@ -20,16 +20,16 @@ rootfs:
   arch: [arm64]
   edition: plamo_wf_experimental
   variant: tablet
-  apilevel: [30]
+  apilevel: [32]
 
   packages: *adaptation_generic_packages
 
   bundles:
     # Developer tools bundle
     - name: droidian-devtools
-      arch: any
-      apilevel: any
-      only_stable: yes
+      arch: [arm64]
+      apilevel: [30,32]
+      only_stable: no
       packages: *devtools_packages
 
 ########################################################################
