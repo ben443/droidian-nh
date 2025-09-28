@@ -25,7 +25,7 @@ rootfs:
   packages: *adaptation_generic_packages
 
   bundles:
-    # Developer tools bundle
+   #  Developer tools bundle
     - name: droidian-devtools
       arch: [arm64]
       apilevel: [30,32]
