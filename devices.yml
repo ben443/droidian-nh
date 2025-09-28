@@ -20,7 +20,7 @@ rootfs:
   arch: [arm64]
   edition: plamo_wf_experimental
   variant: tablet
-  apilevel: [32]
+  apilevel: [30,32]
 
   packages: *adaptation_generic_packages
 
