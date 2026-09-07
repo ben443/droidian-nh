@@ -13,6 +13,15 @@ import datetime
 
 from itertools import chain
 
+PROJECT_NAME = "NetHunter Pro Halium"
+PROJECT_SLUG = "nethunter-pro-halium"
+LEGACY_RECIPE_NAME = "droidian.yaml"
+PROJECT_RECIPE_NAME = "%s.yaml" % PROJECT_SLUG
+VERSION_ENVIRONMENT_VARIABLES = (
+	"NETHUNTER_PRO_VERSION",
+	"DROIDIAN_VERSION",
+)
+
 SUITABLE_FILES = [
 	# Used for community ports
 	"community_devices.yml",
@@ -35,7 +44,7 @@ TEMPLATE = """
 {{- $apilevel := or .apilevel %(apilevel)d -}}
 {{- $version := or .version "%(version)s" -}}
 {{- $mtype := or .mtype "%(mtype)s" -}}
-{{- $image := or .image (printf "droidian-%%s-%%s-%%s-%%s-api%%d-%%s-%%s_%%s.zip" $mtype $edition $variant $product $apilevel $architecture $version $suffix) -}}
+{{- $image := or .image (printf "%(project_slug)s-%%s-%%s-%%s-%%s-api%%d-%%s-%%s_%%s.zip" $mtype $edition $variant $product $apilevel $architecture $version $suffix) -}}
 {{- $output_type := or .output_type "%(output_type)s" -}}
 {{- $use_internal_repository := or .use_internal_repository "%(use_internal_repository)s" -}}
 {{- $droidian_version := or .droidian_version "%(version)s" -}}
@@ -64,7 +73,7 @@ TEMPLATE_END = """
 
 TEMPLATE_ENTRYPOINT = """
   - action: recipe
-    description: Build Droidian
+    description: Build %(project_name)s
     recipe: ../rootfs-templates/device.yaml
     variables:
       architecture: {{ $architecture }}
@@ -132,6 +141,18 @@ def get_matrix(contents):
 		)
 	)
 
+def get_build_version():
+	"""
+	Returns the configured build version while preserving compatibility.
+	"""
+
+	for candidate in VERSION_ENVIRONMENT_VARIABLES:
+		value = os.environ.get(candidate)
+		if value:
+			return value
+
+	return "next"
+
 def generate_recipe_for_product(contents, product, arch, edition, variant, apilevel, droidian_variant=None):
 	"""
 	Generates a debos recipe for the given product
@@ -151,8 +172,10 @@ def generate_recipe_for_product(contents, product, arch, edition, variant, apile
 		"edition" : edition,
 		"variant" : variant,
 		"apilevel" : int(apilevel),
+		"project_name" : PROJECT_NAME,
+		"project_slug" : PROJECT_SLUG,
 		"mtype" : "OFFICIAL" if not IS_COMMUNITY_PORT else "UNOFFICIAL",
-		"version" : os.environ.get("DROIDIAN_VERSION", "next"),
+		"version" : get_build_version(),
 		"droidian_variant" : "-%s" % droidian_variant if droidian_variant else "",
 		"suffix" : datetime.datetime.utcnow().strftime("%Y%m%d"),
 		"output_type" : config["type"],
@@ -202,9 +225,10 @@ def generate_recipe_for_product(contents, product, arch, edition, variant, apile
 				}
 			)
 
-	with open(os.path.join(BUILDER_GENERATED_DIRECTORY, "droidian.yaml"), "w") as f:
-		f.write(TEMPLATE % template_config)
-		f.write(TEMPLATE_ENTRYPOINT)
+	for recipe_name in (PROJECT_RECIPE_NAME, LEGACY_RECIPE_NAME):
+		with open(os.path.join(BUILDER_GENERATED_DIRECTORY, recipe_name), "w") as f:
+			f.write(TEMPLATE % template_config)
+			f.write(TEMPLATE_ENTRYPOINT % template_config)
 
 def prompt_product(contents):
 	"""
