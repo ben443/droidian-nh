@@ -26,7 +26,7 @@ rootfs:
 
   bundles:
    #  Developer tools bundle
-    - name: droidian-devtools
+    - name: nethunter-pro-halium-devtools
       arch: [arm64]
       apilevel: [30,32]
       only_stable: no

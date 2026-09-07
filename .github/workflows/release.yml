@@ -1,4 +1,4 @@
-name: droidian rootfs-builder
+name: nethunter-pro-halium rootfs-builder
 
 on:
   workflow_dispatch:
@@ -38,16 +38,20 @@ jobs:
       - name: Set suffix
         run: echo "release_suffix=_${{ env.current_date }}" >> $GITHUB_ENV
 
-      - name: Set nightly version
-        if: startsWith(github.ref, 'refs/tags/droidian') != true
-        run: echo "DROIDIAN_VERSION=next" >> $GITHUB_ENV
-
-      - name: Set version
-        if: startsWith(github.ref, 'refs/tags/droidian') == true
-        run: echo "DROIDIAN_VERSION=$(echo ${{ github.ref }} | rev | cut -d'/' -f1 | rev)" >> $GITHUB_ENV
+      - name: Set build version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/nethunter-pro-halium* || "${GITHUB_REF}" == refs/tags/droidian* ]]; then
+            version="${GITHUB_REF##*/}"
+            echo "IS_STABLE=true" >> $GITHUB_ENV
+          else
+            version="next"
+            echo "IS_STABLE=false" >> $GITHUB_ENV
+          fi
+          echo "NETHUNTER_PRO_VERSION=${version}" >> $GITHUB_ENV
+          echo "DROIDIAN_VERSION=${version}" >> $GITHUB_ENV
 
       - name: Set identifier
-        run: echo "DROIDIAN_IDENTIFIER=${{ matrix.config.product }}-${{ matrix.config.arch }}-${{ matrix.config.edition }}-${{ matrix.config.variant }}-${{ matrix.config.apilevel }}" >> $GITHUB_ENV
+        run: echo "NETHUNTER_PRO_IDENTIFIER=${{ matrix.config.product }}-${{ matrix.config.arch }}-${{ matrix.config.edition }}-${{ matrix.config.variant }}-${{ matrix.config.apilevel }}" >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,12 +76,12 @@ jobs:
 
       - name: Build rootfs
         run: |
-          docker exec $CONTAINER_HASH /bin/sh -c 'cd /buildd/sources; DROIDIAN_VERSION="${{ env.DROIDIAN_VERSION }}" ./generate_device_recipe.py ${{ matrix.config.product }} ${{ matrix.config.arch }} ${{ matrix.config.edition }} ${{ matrix.config.variant }} ${{ matrix.config.apilevel }} ${{ matrix.config.droidian_variant }} && debos --disable-fakemachine generated/droidian.yaml'
+          docker exec $CONTAINER_HASH /bin/sh -c 'cd /buildd/sources; NETHUNTER_PRO_VERSION="${{ env.NETHUNTER_PRO_VERSION }}" DROIDIAN_VERSION="${{ env.DROIDIAN_VERSION }}" ./generate_device_recipe.py ${{ matrix.config.product }} ${{ matrix.config.arch }} ${{ matrix.config.edition }} ${{ matrix.config.variant }} ${{ matrix.config.apilevel }} ${{ matrix.config.droidian_variant }} && debos --disable-fakemachine generated/nethunter-pro-halium.yaml'
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: droidian-out-${{ matrix.config.product }}-${{ matrix.config.arch }}-${{ matrix.config.edition }}-${{ matrix.config.variant }}-${{ matrix.config.apilevel }}
+          name: nethunter-pro-halium-out-${{ matrix.config.product }}-${{ matrix.config.arch }}-${{ matrix.config.edition }}-${{ matrix.config.variant }}-${{ matrix.config.apilevel }}
           path: out/*
           if-no-files-found: error
           retention-days: 1
@@ -93,6 +97,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set build version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/nethunter-pro-halium* || "${GITHUB_REF}" == refs/tags/droidian* ]]; then
+            version="${GITHUB_REF##*/}"
+            echo "IS_STABLE=true" >> $GITHUB_ENV
+          else
+            version="next"
+            echo "IS_STABLE=false" >> $GITHUB_ENV
+          fi
+          echo "NETHUNTER_PRO_VERSION=${version}" >> $GITHUB_ENV
+          echo "DROIDIAN_VERSION=${version}" >> $GITHUB_ENV
+
       - name: Free up some storage
         uses: jlumbroso/free-disk-space@main
         with:
@@ -106,21 +122,21 @@ jobs:
       - name: Nightly tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: startsWith(github.ref, 'refs/tags/droidian') != true
+        if: env.IS_STABLE != 'true'
         run: |
-          gh release delete nightly --yes | true
-          git push --delete origin refs/tags/nightly || true
-          gh release create nightly
+          gh release delete nightly-nethunter-pro-halium --yes | true
+          git push --delete origin refs/tags/nightly-nethunter-pro-halium || true
+          gh release create nightly-nethunter-pro-halium
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          path: droidian-out
+          path: nethunter-pro-halium-out
 
       - name: Create SHA256SUMS
         run: |
-          cd droidian-out
-          for x in droidian-out-*; do
+          cd nethunter-pro-halium-out
+          for x in nethunter-pro-halium-out-*; do
             cd $x
             sha256sum * >> ../SHA256SUMS
             cd ..
@@ -128,21 +144,21 @@ jobs:
 
       - name: Create stable release (drafted)
         id: create_release
-        if: startsWith(github.ref, 'refs/tags/droidian')
+        if: env.IS_STABLE == 'true'
         uses: softprops/action-gh-release@v2.2.2
         with:
-          files: droidian-out/SHA256SUMS
+          files: nethunter-pro-halium-out/SHA256SUMS
           tag_name: ${{ github.ref }}
           draft: true
           prerelease: false
 
       - name: Create nightly release
         id: create_nightly
-        if: startsWith(github.ref, 'refs/tags/droidian') != true
+        if: env.IS_STABLE != 'true'
         uses: softprops/action-gh-release@v2.2.2
         with:
-          files: droidian-out/SHA256SUMS
-          tag_name: nightly
+          files: nethunter-pro-halium-out/SHA256SUMS
+          tag_name: nightly-nethunter-pro-halium
           draft: false
           prerelease: true
 
@@ -160,28 +176,40 @@ jobs:
     name: Publish ${{ matrix.config.job_name }}
 
     steps:
+      - name: Set build version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/nethunter-pro-halium* || "${GITHUB_REF}" == refs/tags/droidian* ]]; then
+            version="${GITHUB_REF##*/}"
+            echo "IS_STABLE=true" >> $GITHUB_ENV
+          else
+            version="next"
+            echo "IS_STABLE=false" >> $GITHUB_ENV
+          fi
+          echo "NETHUNTER_PRO_VERSION=${version}" >> $GITHUB_ENV
+          echo "DROIDIAN_VERSION=${version}" >> $GITHUB_ENV
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: droidian-out-${{ matrix.config.product }}-${{ matrix.config.arch }}-${{ matrix.config.edition }}-${{ matrix.config.variant }}-${{ matrix.config.apilevel }}
-          path: droidian-out
+          name: nethunter-pro-halium-out-${{ matrix.config.product }}-${{ matrix.config.arch }}-${{ matrix.config.edition }}-${{ matrix.config.variant }}-${{ matrix.config.apilevel }}
+          path: nethunter-pro-halium-out
 
       - name: Create stable release (drafted)
         id: create_release
-        if: startsWith(github.ref, 'refs/tags/droidian')
+        if: env.IS_STABLE == 'true'
         uses: softprops/action-gh-release@v2.2.2
         with:
-          files: droidian-out/*
+          files: nethunter-pro-halium-out/*
           tag_name: ${{ github.ref }}
           draft: true
           prerelease: false
 
       - name: Create nightly release
         id: create_nightly
-        if: startsWith(github.ref, 'refs/tags/droidian') != true
+        if: env.IS_STABLE != 'true'
         uses: softprops/action-gh-release@v2.2.2
         with:
-          files: droidian-out/*
-          tag_name: nightly
+          files: nethunter-pro-halium-out/*
+          tag_name: nightly-nethunter-pro-halium
           draft: false
           prerelease: true
