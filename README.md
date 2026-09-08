@@ -69,9 +69,9 @@ Then, boot your favourite Android recovery.
 
 ## Installation
 
-From recovery open adb sideload mode (under advanced on TWRP) and run following commands on your computer replacing `ARCH_YYYYMMDD` with the version of NetHunter Pro Halium and `vendor-device` with the vendor and device codenames:
+From recovery open adb sideload mode (under advanced on TWRP) and run following commands on your computer replacing `ARCH` with the architecture, `VERSION_YYYYMMDD` with the NetHunter Pro Halium version and build date, `ARCH_YYYYMMDD` with the architecture and build date where shown, and `vendor-device` with the vendor and device codenames:
 
-* `adb sideload nethunter-pro-halium-OFFICIAL-phosh-phone-rootfs-apiXX-ARCH-VERSION_DATE.zip`
+* `adb sideload nethunter-pro-halium-OFFICIAL-phosh-phone-rootfs-apiXX-ARCH-VERSION_YYYYMMDD.zip`
 
 If you want to sideload devtools:
 
