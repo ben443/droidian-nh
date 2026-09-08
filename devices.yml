@@ -18,8 +18,8 @@
 rootfs:
   type: rootfs
   arch: [arm64]
-  edition: plamo_wf_experimental
-  variant: tablet
+  edition: phosh
+  variant: phone
   apilevel: [30,32]
 
   packages: *adaptation_generic_packages
