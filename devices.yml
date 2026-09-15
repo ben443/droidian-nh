@@ -11,6 +11,12 @@
   packages: &adaptation_generic_packages
     - adaptation-android-generic
 
+.nethunter_theme_packages:
+  packages: &nethunter_theme_packages
+    - adaptation-android-generic
+    - kali-archive-keyring
+    - kali-mobile-themes
+
 ########################################################################
 # Recovery-flashable rootfses                                          #
 ########################################################################
@@ -22,7 +28,7 @@ rootfs:
   variant: phone
   apilevel: [30,32]
 
-  packages: *adaptation_generic_packages
+  packages: *nethunter_theme_packages
 
   bundles:
    #  Developer tools bundle

@@ -1,0 +1,11 @@
+Package: *
+Pin: release n=kali-rolling
+Pin-Priority: 1
+
+Package: kali-archive-keyring
+Pin: release n=kali-rolling
+Pin-Priority: 990
+
+Package: kali-mobile-themes
+Pin: release n=kali-rolling
+Pin-Priority: 990
