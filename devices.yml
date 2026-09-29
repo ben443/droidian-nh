@@ -10,6 +10,7 @@
 .adaptation_generic_packages:
   packages: &adaptation_generic_packages
     - adaptation-android-generic
+    - kali-linux-nethunter-pro
 
 ########################################################################
 # Recovery-flashable rootfses                                          #
