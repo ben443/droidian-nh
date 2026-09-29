@@ -10,7 +10,6 @@
 .adaptation_generic_packages:
   packages: &adaptation_generic_packages
     - adaptation-android-generic
-    - kali-themes-mobile
 
 ########################################################################
 # Recovery-flashable rootfses                                          #
